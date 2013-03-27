@@ -153,7 +153,7 @@ Validation returns a "validation" object that contains 1-n "error" objects.
 <h4>Error Object</h4>
 ```javascript
     var error = new Object();
-    error.input = value; //jQuery object
+    error.input = value; //jQuery object (text input) that threw the error
     error.message = "";
 ```
 
