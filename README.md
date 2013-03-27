@@ -18,6 +18,7 @@ Also, it provides the ability to show errors/messages.
 <li>Validation will also happen on PASTE and will stop entry if the pasted text is not valid for the given regex applied</li>
 <li>Objects can be passed into the validation/message functions via jQuery object or selector (with or without '#')</li>
 <li><b>Works well with ASP.NET (simply pass around the ID of the element--no need to worry about the server renaming it on the page)</b></li>
+<li>'Identify' feature will tell you what rules a string will match (try using it on keyup event)</li>
 </ul>
 
 <h2>Important</h2>
@@ -68,7 +69,7 @@ If you wanted both filter and validate a credit card you would write<br/>
 <input id="txtCCNumber" type="text" maxlength="19" class="filter-credit-card regex-credit-card"/>
 ```
 
-<h2>List of filter/validation CSS classes</h2>
+<h4>List of filter/validation CSS classes</h4>
 <ul>
 <li>filter-name &nbsp;&nbsp;&nbsp;&nbsp; regex-name</li>
 <li>filter-letters &nbsp;&nbsp;&nbsp;&nbsp; regex-letters</li>
@@ -94,7 +95,34 @@ If you wanted both filter and validate a credit card you would write<br/>
 <li>filter-hard-password <b>(filter here only stops copy/paste)</b> &nbsp;&nbsp;&nbsp;&nbsp; regex-hard-password</li>
 </ul>
 
-<h2>CSS classes applied to inputs</h2>
+<h4>Custom Regex</h4>
+Simply add a "pattern" attribute for HTML5 or a "regex:" class for HTML4
+
+HTML5
+```html
+<input id="txtCCExpireMonth" placeholder="mm" value="" type="text" maxlength="2" class="filter-numbers" pattern="^\d{2}$" data-error="Invalid month"/>
+```
+
+HTML4 -- *IMPORTANT* REGEX CANNOT HAVE A SPACE USE '\s' INSTEAD
+```html
+<input id="txtCCExpireYear" placeholder="yy" value="" type="text" maxlength="2" class="filter-numbers regex:^\d{2}$" data-error="Invalid year"/> 
+```
+
+<h4>Matching</h4>
+You can validate that one input's value matches another input's value two ways (one for HTML4 and one for HTML5).
+
+HTML5
+```html
+<input id="txtConfirmEmail" name="confirm-email" type="text" placeholder="" class="filter-email required" data-matches="txtEmail"/>
+```
+
+HTML4
+```html
+<input id="txtConfirmEmail" name="confirm-email" type="text" placeholder="" class="filter-email required matches:txtEmail"/>
+```
+
+
+<h4>CSS classes applied to inputs</h4>
 <ul>
 <li>.input-valid</li>
 <li>.input-invalid</li>
@@ -108,9 +136,26 @@ There are two different types of errors...
 <ol>
 <li>Tooltip (which shows up above, to the right, or below the input)</li>
 <li>Summary (which will list the errors and appear above or below a DOM element you specify)</li>
-<ol>
+</ol>
 
 Showing these errors can optionally apply the CSS class ".validation-input-error" to the input element which can be used to color/style the element that threw the error.
+<br>
+Validation returns a "validation" object that contains 1-n "error" objects.
+<br>
+
+<h4>Validation Object</h4>
+```javascript
+    var validation = new Object();
+    validation.success = true; //defaults to true
+    validation.errors = new Array();
+```
+
+<h4>Error Object</h4>
+```javascript
+    var error = new Object();
+    error.input = value; //jQuery object
+    error.message = "";
+```
 
 You can call the validation from jQuery (usually on a button click) like so...<br/>
 
@@ -137,7 +182,16 @@ You can remove tooltip errors with...
 RemoveErrorToolTip(input); //input is the jQuery object of the input field the error is attached to                       
 ```
 
-<h2>CSS classes applied to errors</h2>
+<h4>Error Text</h4>
+Generic error messages are supplied like "Invalid credit card number" but sometimes these aren't good enough
+(e.g. "Must be a POSITIVE float/decimal number").  Most likely you will want "Must be a POSITIVE float/decimal number"
+to be "Invalid Measurement".  So you simply add a "data-error" attribute...
+
+```html
+<input id="txtMeasurement" name="measurement" type="text" placeholder="" class="regex-positive-float  required" data-error="Invalid Measurement"/>
+```
+
+<h4>CSS classes applied to errors</h4>
 <ul>
 <li>.error-summary</li>
 <li>.error-tooltip</li>
@@ -150,15 +204,15 @@ Every good form will give the user feedback (good or bad) when something happens
 So I have provided a mechanism to show messages.
 Messages can either show for a certain length of time or, if no time is provided, an "x" will show in the top right corner so they can be dismissed.
 
-<h4>You can show a message with...<h4>
+<h4>You can show a message with...</h4>
 ```javascript
 ShowMessage("#btnSubmit", "after", "failure", "Sign Up failed", "If this continues, please submit a bug.", null);
 ```
 
-<h2>CSS classes applied to messages</h2>
+<h4>CSS classes applied to messages</h4>
 <ul>
 <li>.validation-message</li>
 <li>.whatever-you-supply</li>
 </ul>
->
+
 
