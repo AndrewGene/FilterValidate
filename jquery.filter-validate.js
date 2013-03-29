@@ -1101,4 +1101,11 @@
         return false;
     }
 
+
+    // exports
+    window.RemoveErrorToolTip = RemoveErrorToolTip;
+    window.ShowMessage = ShowMessage;
+    window.ValidateContainer = ValidateContainer;
+
+
 }) (jQuery);

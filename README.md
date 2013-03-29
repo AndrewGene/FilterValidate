@@ -137,14 +137,14 @@ Validation returns a "validation" object that contains 1-n "error" objects.
 
 #### Validation Object
 ```javascript
-    var validation = new Object();
+    var validation = {};
     validation.success = true; //defaults to true
-    validation.errors = new Array();
+    validation.errors = [];
 ```
 
 #### Error Object
 ```javascript
-    var error = new Object();
+    var error = {};
     error.input = value; //jQuery object (text input) that threw the error
     error.message = "";
 ```
