@@ -31,10 +31,10 @@ Also, this file is _pretty_ big for javascript.  That is on purpose.
 Take out what you don't need and minify away.  The size should be fairly managable after that.
 
 
-# Requirements
+## Requirements
 \>= jQuery 1.7
 
-# Things you can filter/validate
+## Things you can filter/validate
 - Names
 - Letters (with and without spaces)
 - Whole Numbers (positive and negative)
@@ -57,7 +57,7 @@ Take out what you don't need and minify away.  The size should be fairly managab
 - Regex passed in via the "pattern" attribute (HTML5)
 - One input's value equals another input's value
 
-# Usage
+## Usage
 All "filter" CSS classes start with "filter-" and all validation CSS classes start with "regex-" (Validation isn't 'simply' regex in some cases. For example, the credit card validation does several checks).
 
 If you wanted both filter and validate a credit card you would write
@@ -65,29 +65,29 @@ If you wanted both filter and validate a credit card you would write
 <input id="txtCCNumber" type="text" maxlength="19" class="filter-credit-card regex-credit-card"/>
 ```
 
-## List of filter/validation CSS classes</h4>
-- filter-name &nbsp;&nbsp;&nbsp;&nbsp; regex-name
-- filter-letters &nbsp;&nbsp;&nbsp;&nbsp; regex-letters
-- filter-letters-with-spaces &nbsp;&nbsp;&nbsp;&nbsp; regex-letters-with-spaces
-- filter-currency &nbsp;&nbsp;&nbsp;&nbsp; regex-currency
-- filter-numbers &nbsp;&nbsp;&nbsp;&nbsp; regex-numbers
-- filter-positive-numbers &nbsp;&nbsp;&nbsp;&nbsp; regex-positive-numbers
-- filter-float &nbsp;&nbsp;&nbsp;&nbsp; regex-float
-- filter-positive-float &nbsp;&nbsp;&nbsp;&nbsp; regex-positive-float
-- filter-credit-card &nbsp;&nbsp;&nbsp;&nbsp; regex-credit-card
-- regex-routing-number __(no specific filter, use 'filter-positive-numbers')__
-- filter-phone &nbsp;&nbsp;&nbsp;&nbsp; regex-phone
-- filter-email __(this allows ANY character right now)__&nbsp;&nbsp;&nbsp;&nbsp; regex-email
-- filter-street &nbsp;&nbsp;&nbsp;&nbsp; regex-street
-- filter-alphanumeric &nbsp;&nbsp;&nbsp;&nbsp; regex-alphanumeric
-- filter-alphanumeric-with-spaces &nbsp;&nbsp;&nbsp;&nbsp; regex-alphanumeric-with-spaces
-- filter-ip-address &nbsp;&nbsp;&nbsp;&nbsp; regex-ip-address
-- filter-mac-address &nbsp;&nbsp;&nbsp;&nbsp; regex-mac-address
-- filter-latitude &nbsp;&nbsp;&nbsp;&nbsp; regex-latitude
-- filter-longitude &nbsp;&nbsp;&nbsp;&nbsp; regex-longitude
-- filter-gps-point &nbsp;&nbsp;&nbsp;&nbsp; regex-gps-point
-- filter-url &nbsp;&nbsp;&nbsp;&nbsp; regex-url 
-- filter-hard-password <b>(filter here only stops copy/paste)</b> &nbsp;&nbsp;&nbsp;&nbsp; regex-hard-password
+#### List of filter/validation CSS classes</h4>
+- ```filter-name``` ```regex-name```
+- ```filter-letters``` ```regex-letters```
+- ```filter-letters-with-spaces``` ```regex-letters-with-spaces```
+- ```filter-currency``` ```regex-currency```
+- ```filter-numbers``` ```regex-numbers```
+- ```filter-positive-numbers``` ```regex-positive-numbers```
+- ```filter-float``` ```regex-float```
+- ```filter-positive-float``` ```regex-positive-float```
+- ```filter-credit-card``` ```regex-credit-card```
+- ```regex-routing-number``` __(no specific filter, use 'filter-positive-numbers')__
+- ```filter-phone``` ```regex-phone```
+- ```filter-email __(this allows ANY character right now)__ ```regex-email```
+- ```filter-street``` ```regex-street```
+- ```filter-alphanumeric``` ```regex-alphanumeric```
+- ```filter-alphanumeric-with-spaces``` ```regex-alphanumeric-with-spaces```
+- ```filter-ip-address``` ```regex-ip-address```
+- ```filter-mac-address``` ```regex-mac-address```
+- ```filter-latitude``` ```regex-latitude```
+- ```filter-longitude``` ```regex-longitude```
+- ```filter-gps-point``` ```regex-gps-point```
+- ```filter-url``` ```regex-url```
+- ```filter-hard-password``` __(filter here only stops copy/paste)__ ```regex-hard-password```
 
 #### Custom Regex
 Simply add a "pattern" attribute for HTML5 or a "regex:" class for HTML4
@@ -211,7 +211,7 @@ First, install Node.js (and npm) if you haven't already.
 
 ### Setup and installation
 
-```shell
+```bash
 # install grunt globally
 sudo npm install grunt-cli -g
 
@@ -219,12 +219,12 @@ sudo npm install grunt-cli -g
 npm install
 ```
 ### Run commands
-```shell
+```bash
 # run all commands
 grunt
 
 # or individually
 grunt jshint
 grunt uglify
-
+```
 
