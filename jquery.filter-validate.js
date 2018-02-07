@@ -476,7 +476,7 @@ $(function () {
     }).on("keyup.fv change.fv", ".regex-hard-password", function (e) {
         ValidateInputWithRegex(this, validHardPassword);
     });
-    
+
     //matches passed in via CSS class
     $("body").on("keyup.fv change.fv", "input[class*='matches:']", function (e) {
         var classParts = $(this).attr("class").toString().split(' ');
@@ -632,7 +632,7 @@ function Normalize(id) {
         container = $(id)
     }
 
-    if (container.length === 0) {        
+    if (container.length === 0) {
         if ($.type(id) === "string") {
             container = $("input[id*=" + id.toString().replace("#", "") + "]");
         }
@@ -655,18 +655,18 @@ function ValidateContainer(id) {
     container = Normalize(id);
 
     if (container !== null) {
-        if ($(container.selector + " input.input-invalid").length > 0) {
+        if (container.find("input.input-invalid").length > 0) {
             validation.success = false;
-            $.each($(container.selector + " input.input-invalid"), function (index, value) {
+            $.each(container.find("input.input-invalid"), function (index, value) {
                 var error = new Object();
                 error.input = value;
                 error.message = DecodeMessage(value);
                 validation.errors.push(error);
             });
         }
-        if ($(container.selector + " input.required").not(".input-invalid").not(".input-valid").length > 0) {
+        if ($(container).find("input.required").not(".input-invalid").not(".input-valid").length > 0) {
             validation.success = false;
-            $.each($(container.selector + " input.required").not(".input-invalid").not(".input-valid"), function (index, value) {
+            $.each(container.find("input.required").not(".input-invalid").not(".input-valid"), function (index, value) {
                 if ($(value).val().length == 0) {
                     validation.success = false;
                     var error = new Object();
@@ -679,7 +679,7 @@ function ValidateContainer(id) {
                 }
             });
         }
-    }    
+    }
 
     return validation;
 }
@@ -791,7 +791,7 @@ function ShowErrorSummary(element, beforeOrAfter, heading, errors, colorInputs) 
         var errorString = "<div class='error-summary'><h3>" + heading + "</h3><ul>";
         $.each(errors, function (index, value) {
             if (colorInputs !== null && colorInputs === true) {
-                value.input.not(".input-valid").addClass("validation-input-error");
+                $(value.input).not(".input-valid").addClass("validation-input-error");
             }
             if (value.message.length > 0 && value.message !== "") {
                 errorString += "<li>" + value.message + "</li>";
@@ -872,14 +872,14 @@ function IsMovementKey(key) {
     //9: Tab
     return ((key >= 35 && key <= 40) || key === 8 || key === 46 || key === 9);
 }
-function IsModifier(key) {    
+function IsModifier(key) {
     //16: Shift
     return (key === 16);
 }
-function IsSpace(key) {    
+function IsSpace(key) {
     return key === 32;
 }
-function IsComma(key) {    
+function IsComma(key) {
     return key === 188;
 }
 function IsPaste(e) {
@@ -903,8 +903,8 @@ function ValidPaste(e, regex, input, overridingText) {
     }
 }
 function ValidateInputWithRegex(input, regex) {
-    $(input).removeClass("input-invalid input-valid");    
-    if ($(input).val().length > 0) {        
+    $(input).removeClass("input-invalid input-valid");
+    if ($(input).val().length > 0) {
         regex.test($(input).val()) ? $(input).removeClass("input-invalid").addClass("input-valid") : $(input).removeClass("input-valid").addClass("input-invalid");
     }
 
@@ -986,7 +986,7 @@ function Identify(string) {
         matches.push("Hard password");
     }
 
-     
+
     var n = 0;
     for (var i = 0; i < string.length; i += 3) {
         n += parseInt(string.charAt(i), 10) * 3
