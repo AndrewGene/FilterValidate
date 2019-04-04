@@ -23,6 +23,7 @@ Also, it provides the ability to show errors/messages.
 
 <h2>Important</h2>
 You must not use 
+
 ```javascript
 $('body').unbind('keyup');
 ```
@@ -205,6 +206,7 @@ So I have provided a mechanism to show messages.
 Messages can either show for a certain length of time or, if no time is provided, an "x" will show in the top right corner so they can be dismissed.
 
 <h4>You can show a message with...</h4>
+
 ```javascript
 ShowMessage("#btnSubmit", "after", "failure", "Sign Up failed", "If this continues, please submit a bug.", null);
 ```
