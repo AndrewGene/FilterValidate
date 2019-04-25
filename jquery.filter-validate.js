@@ -26,8 +26,8 @@
     Longitude
     GPS Point (e.g. 35.092945,-92.515869)
     URLs
-    Hard Password    
-    One input's value equal to another input's value
+    myConwayCorp Username/Password/Account Number
+    Conway Corp Node
 */
 
 /*Things you can only validate*/
@@ -60,31 +60,54 @@
     .error-tooltip
     .validation-message
 
+    --Custom Validation Schemes--
+    var validationScheme = {
+            elements: $("#choose-bank-account-type .radio-button"), //jquery selector for elements to check for validation
+            isValid: function () { //function that gets called for validation (usually you will foreach through each element looking for a valid option)
+                var valid = false;
+                $.each(this.elements, function (index, element) {
+                    if ($(element).hasClass("on")) {
+                        valid = true; 
+                    }
+                });
+                return valid;
+            },
+            error: "Please select account type", //error message to show if validation fails
+            elementForError: "#btn-add-bank-account" //jquery selector string for element on the page to associate with the error
+        };
+
+    ValidateWithScheme(validationScheme); //adds validation scheme to filter-validate for the page
+
+
     --Validate Forms and response--
-    var validation = ValidateContainer("#info");
+    var validation = ValidateContainer("#info .check");
     if (validation.success) {
         alert("it's all good");
     }
     else {
     --For tooltip errors--
          $.each(validation.errors, function (index, value) {
-                    ShowErrorToolTip(value.input, "right", value.message, true);
+             $(value.input).not(".input-valid").css({ "background-color": "#f00" });
+             ShowErrorToolTip(value.input, "right", value.message);         
          });
 
     --For error summary--
-        ShowErrorSummary(this, "after", "The following errors need to be corrected.", validation.errors, true);
+        $("#info .card input.input-invalid").css({ "background-color": "#f00" });
+        $("#info .card input.required").not(".input-valid").css({ "background-color": "#f00" });        
+        ShowErrorSummary(this, "after", "The following errors need to be corrected.", validation.errors);
     }
-
-    --hard password--
-    *8-16 characters
-    *must contain at least 4 letters, a capital letter, and a number or symbol(!,$,+,-,comma,.,@,_,space)
 */
 /*******/
+
+/*(function (filterValidate, $, undefined) {
+
+}(window.filterValidate = window.filterValidate || {}, jQuery));*/
+
 var validName = /^[- a-zA-Z'.]+$/;
 var validCard = /^(?:4[0-9]{12}(?:[0-9]{3})?|5[1-5][0-9]{14}|6(?:011|5[0-9][0-9])[0-9]{12}|3[47][0-9]{13}|3(?:0[0-5]|[68][0-9])[0-9]{11}|(?:2131|1800|35\d{3})\d{11})$/;
 var validLetters = /^[a-zA-Z]+$/;
 var validLettersWithSpaces = /^[a-zA-Z ]+$/;
-var validAmount = /^\$?[\d]{0,3}(?:,?[\d]{3})*(?:\.[\d]{2})?$/;
+var validAmount = /^-?\$?[\d]{0,3}(?:,?[\d]{3})*(?:\.[\d]{2})?$/;
 var validNumbers = /^-?[\d]+$/;
 var validPositiveNumbers = /^[\d]+$/;
 var validFloat = /^-?[\d]*\.\d+$/;
@@ -97,11 +120,16 @@ var validAlphaNumeric = /^[-\da-zA-Z]+$/;
 var validAlphaNumericWithSpaces = /^[\s-\da-zA-Z]+$/;
 var validIP = /^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
 var validMAC = /^([A-Fa-f\d]{4}\.[A-Fa-f\d]{4}\.[A-Fa-f\d]{4})|([A-Fa-f\d]{12})$/;
-var validGPSCoordinate = /^\-?[\d]{1,3}(\.{1}\d+)?$/
-var validGPSPoint = /^\-?[\d]{1,3}(\.{1}\d+)?\,\-?[\d]{1,3}(\.{1}\d+)?$/
-var validURL = /^(https?:\/\/)?([\da-z\.-]+)\.([a-z\.]{2,6})([\/\w \.-]*)*\/?$/
-var validHardPassword = /^.*(?=.{8,16})(?=(.*[a-zA-Z]){4})((?=.*[A-Z])(?=.*[!\$\+\-,\.@_\s])|(?=.*[0-9])(?=.*[!\$\+\-,\.@_\s])|(?=.*[A-Z])(?=.*[0-9])).*$/
+var validGPSCoordinate = /^\-?[\d]{1,3}(\.{1}\d+)?$/;
+var validGPSPoint = /^\-?[\d]{1,3}(\.{1}\d+)?\,\-?[\d]{1,3}(\.{1}\d+)?$/;
+var validURL = /^(https?:\/\/)?([\da-z\.-]+)\.([a-z\.]{2,6})([\/\w \.-]*)*\/?$/;
+var validConwayCorpPassword = /^.*(?=.{8,16})(?=(.*[a-zA-Z]){4})((?=.*[A-Z])(?=.*[!\$\+\-,\.@_\s])|(?=.*[0-9])(?=.*[!\$\+\-,\.@_\s])|(?=.*[A-Z])(?=.*[0-9])).*$/;
+var validNode = /^[(A-Da-d)|Ff|Hh]{1}\d{1,2}$/;
+
+var validationSchemes = [];
+
 $(function () {
+    //$("body").listenForChange(); //if jquery.autofill.js is included first
 
     $("body").on("keyup.fv", "input[type=text]", function (e) {
         //$(this).css("background-color", "#fff");
@@ -146,7 +174,7 @@ $(function () {
 
     //US Currency
     $("body").on("keydown.fv", ".filter-currency", function (e) {
-        return (IsNumber(e.which, e.shiftKey) || IsModifier(e.which) || (e.shiftKey && e.which === 52) || IsComma(e.which) || IsDot(e.which) || IsMovementKey(e.which) || IsPaste(e) || IsCopy(e) || IsEnter(e));
+        return (IsNumber(e.which, e.shiftKey) || IsModifier(e.which) || IsDash(e.which, e.shiftKey) || (e.shiftKey && e.which === 52) || IsComma(e.which) || IsDot(e.which) || IsMovementKey(e.which) || IsPaste(e) || IsCopy(e) || IsEnter(e));
     }).on("keyup.fv change.fv", ".regex-currency", function (e) {
         var candidateCurrency = CleanCurrency($(this).val().toString());
         $(this).val().length > 0 ? (!validAmount.test(candidateCurrency) ? $(this).removeClass("input-valid").addClass("input-invalid") : $(this).removeClass("input-invalid").addClass("input-valid")) : $(this).removeClass("input-invalid input-valid");
@@ -162,7 +190,7 @@ $(function () {
 
     //Whole Numbers
     $("body").on("keydown.fv", ".filter-numbers", function (e) {
-        return (IsNumber(e.which, e.shiftKey) || IsDash(e.which, e.shiftKey) || IsMovementKey(e.which) || IsPaste(e) || IsCopy(e) || IsEnter(e));
+        return IsNumber(e.which, e.shiftKey) || IsDash(e.which, e.shiftKey) || IsMovementKey(e.which) || IsPaste(e) || IsCopy(e) || IsEnter(e);
     }).on("keyup.fv change.fv", ".regex-numbers", function (e) {
         ValidateInputWithRegex(this, validNumbers);
     }).on("paste.fv", ".regex-numbers", function (e) {
@@ -174,7 +202,7 @@ $(function () {
 
     //Positive Whole Numbers
     $("body").on("keydown.fv", ".filter-positive-numbers", function (e) {
-        return (IsNumber(e.which, e.shiftKey) || IsMovementKey(e.which) || IsPaste(e) || IsCopy(e) || IsEnter(e));
+        return IsNumber(e.which, e.shiftKey) || IsMovementKey(e.which) || IsPaste(e) || IsCopy(e) || IsEnter(e);
     }).on("keyup.fv change.fv", ".regex-positive-numbers", function (e) {
         ValidateInputWithRegex(this, validPositiveNumbers);
     }).on("paste.fv", ".regex-positive-numbers", function (e) {
@@ -186,7 +214,7 @@ $(function () {
 
     //Float
     $("body").on("keydown.fv", ".filter-float", function (e) {
-        return (IsNumber(e.which, e.shiftKey) || IsDash(e.which, e.shiftKey) || IsDot(e.which) || IsMovementKey(e.which) || IsPaste(e) || IsCopy(e) || IsEnter(e));
+        return IsNumber(e.which, e.shiftKey) || IsDash(e.which, e.shiftKey) || IsDot(e.which) || IsMovementKey(e.which) || IsPaste(e) || IsCopy(e) || IsEnter(e);
     }).on("keyup.fv change.fv", ".regex-float", function (e) {
         ValidateInputWithRegex(this, validFloat);
     }).on("paste.fv", ".regex-float", function (e) {
@@ -198,7 +226,7 @@ $(function () {
 
     //Positive Float
     $("body").on("keydown.fv", ".filter-positive-float", function (e) {
-        return (IsNumber(e.which, e.shiftKey) || IsDot(e.which) || IsMovementKey(e.which) || IsPaste(e) || IsCopy(e) || IsEnter(e));
+        return IsNumber(e.which, e.shiftKey) || IsDot(e.which) || IsMovementKey(e.which) || IsPaste(e) || IsCopy(e) || IsEnter(e);
     }).on("keyup.fv change.fv", ".regex-positive-float", function (e) {
         ValidateInputWithRegex(this, validPositiveFloat);
     }).on("paste.fv", ".regex-positive-float", function (e) {
@@ -210,7 +238,7 @@ $(function () {
 
     //Credit Card Number
     $("body").on("keydown.fv", ".filter-credit-card", function (e) {
-        return (IsNumber(e.which, e.shiftKey) || IsMovementKey(e.which) || IsDash(e.which) || IsSpace(e.which) || IsPaste(e) || IsCopy(e) || IsEnter(e));
+        return IsNumber(e.which, e.shiftKey) || IsMovementKey(e.which) || IsDash(e.which) || IsSpace(e.which) || IsPaste(e) || IsCopy(e) || IsEnter(e);
     }).on("keyup.fv change.fv", ".regex-credit-card", function (e) {
         var candidateCardNumber = CleanCreditCard($(this).val().toString());
         $(this).val().length > 0 ? ((!validCard.test(candidateCardNumber) || !Validate(candidateCardNumber)) ? $(this).removeClass("input-valid").addClass("input-invalid") : $(this).removeClass("input-invalid").addClass("input-valid")) : $(this).removeClass("input-invalid input-valid");
@@ -237,7 +265,7 @@ $(function () {
                     + parseInt(routingCandidate.charAt(i + 2), 10);
             }
 
-            if (n != 0 && n % 10 == 0) {
+            if (n !== 0 && n % 10 === 0) {
                 $(this).removeClass("input-invalid").addClass("input-valid");
                 if ($(this).hasClass("input-valid") && $(this).next().hasClass("error-tooltip")) {
                     $(this).next(".error-tooltip").first().remove();
@@ -260,7 +288,7 @@ $(function () {
 
     //US Phone
     $("body").on("keydown.fv", ".filter-phone", function (e) {
-        return (IsNumber(e.which, e.shiftKey) || IsModifier(e.which) || IsMovementKey(e.which) || IsSpace(e.which) || IsDash(e.which, e.shiftKey) || IsDot(e.which) || (e.shiftKey && e.which == 48) || (e.shiftKey && e.which == 57) || IsPaste(e) || IsCopy(e) || IsEnter(e));
+        return IsNumber(e.which, e.shiftKey) || IsModifier(e.which) || IsMovementKey(e.which) || IsSpace(e.which) || IsDash(e.which, e.shiftKey) || IsDot(e.which) || (e.shiftKey && e.which === 48) || (e.shiftKey && e.which === 57) || IsPaste(e) || IsCopy(e) || IsEnter(e);
     }).on("keyup.fv change.fv", ".regex-phone", function (e) {
         ValidateInputWithRegex(this, validPhone);
     }).on("paste.fv", ".regex-phone", function (e) {
@@ -272,7 +300,7 @@ $(function () {
 
     //US Zip Code
     $("body").on("keydown.fv", ".filter-zip", function (e) {
-        return (IsNumber(e.which, e.shiftKey) || IsDash(e.which, e.shiftKey) || IsMovementKey(e.which) || IsPaste(e) || IsCopy(e) || IsEnter(e));
+        return IsNumber(e.which, e.shiftKey) || IsDash(e.which, e.shiftKey) || IsMovementKey(e.which) || IsPaste(e) || IsCopy(e) || IsEnter(e);
     }).on("keyup.fv change.fv", ".regex-zip", function (e) {
         ValidateInputWithRegex(this, validZip);
     }).on("paste.fv", ".regex-zip", function (e) {
@@ -304,7 +332,7 @@ $(function () {
     $("body").on("keydown.fv", ".filter-street", function (e) {
         //51: 3 (Shift + 3 == #)
         //55: 7 (Shift + 7 == &)
-        return (IsNumber(e.which, e.shiftKey) || IsLetter(e.which) || IsModifier(e.which) || IsMovementKey(e.which) || IsDot(e.which) || IsSpace(e.which) || IsDash(e.which, e.shiftKey) || (e.shiftKey && e.which === 51) || (e.shiftKey && e.which === 55) || IsPaste(e) || IsCopy(e) || IsEnter(e));
+        return IsNumber(e.which, e.shiftKey) || IsLetter(e.which) || IsModifier(e.which) || IsMovementKey(e.which) || IsDot(e.which) || IsSpace(e.which) || IsDash(e.which, e.shiftKey) || (e.shiftKey && e.which === 51) || (e.shiftKey && e.which === 55) || IsPaste(e) || IsCopy(e) || IsEnter(e);
     }).on("keyup.fv change.fv", ".regex-street", function (e) {
         ValidateInputWithRegex(this, validStreet);
     }).on("paste.fv", ".regex-street", function (e) {
@@ -316,7 +344,7 @@ $(function () {
 
     //Alphanumeric -- no spaces
     $("body").on("keydown.fv", ".filter-alphanumeric", function (e) {
-        return (IsLetter(e.which) || IsNumber(e.which, e.shiftKey) || IsModifier(e.which) || IsMovementKey(e.which) || IsPaste(e) || IsCopy(e) || IsEnter(e));
+        return IsLetter(e.which) || IsNumber(e.which, e.shiftKey) || IsModifier(e.which) || IsMovementKey(e.which) || IsPaste(e) || IsCopy(e) || IsEnter(e);
     }).on("keyup.fv change.fv", ".regex-alphanumeric", function (e) {
         ValidateInputWithRegex(this, validAlphaNumeric);
     }).on("paste.fv", ".regex-alphanumeric", function (e) {
@@ -328,7 +356,7 @@ $(function () {
 
     //Alphanumeric -- allows spaces
     $("body").on("keydown.fv", ".filter-alphanumeric-with-spaces", function (e) {
-        return (IsLetter(e.which) || IsNumber(e.which, e.shiftKey) || IsModifier(e.which) || IsSpace(e.which) || IsMovementKey(e.which) || IsPaste(e) || IsCopy(e) || IsEnter(e));
+        return IsLetter(e.which) || IsNumber(e.which, e.shiftKey) || IsModifier(e.which) || IsSpace(e.which) || IsMovementKey(e.which) || IsPaste(e) || IsCopy(e) || IsEnter(e);
     }).on("keyup.fv change.fv", ".regex-alphanumeric-with-spaces", function (e) {
         ValidateInputWithRegex(this, validAlphaNumericWithSpaces);
     }).on("paste.fv", ".regex-alphanumeric-with-spaces", function (e) {
@@ -340,7 +368,7 @@ $(function () {
 
     //IP Address
     $("body").on("keydown.fv", ".filter-ip-address", function (e) {
-        return (IsNumber(e.which, e.shiftKey) || IsDot(e.which) || IsMovementKey(e.which) || IsPaste(e) || IsCopy(e) || IsEnter(e));
+        return IsNumber(e.which, e.shiftKey) || IsDot(e.which) || IsMovementKey(e.which) || IsPaste(e) || IsCopy(e) || IsEnter(e);
     }).on("keyup.fv change.fv", ".regex-ip-address", function (e) {
         ValidateInputWithRegex(this, validIP);
     }).on("paste.fv", ".regex-ip-address", function (e) {
@@ -352,7 +380,7 @@ $(function () {
 
     //MAC Address
     $("body").on("keydown.fv", ".filter-mac-address", function (e) {
-        return (IsLetter(e.which) || IsNumber(e.which, e.shiftKey) || IsDot(e.which) || IsModifier(e.which) || IsMovementKey(e.which) || IsPaste(e) || IsCopy(e) || IsEnter(e));
+        return IsLetter(e.which) || IsNumber(e.which, e.shiftKey) || IsDot(e.which) || IsModifier(e.which) || IsMovementKey(e.which) || IsPaste(e) || IsCopy(e) || IsEnter(e);
     }).on("keyup.fv change.fv", ".regex-mac-address", function (e) {
         ValidateInputWithRegex(this, validMAC);
     }).on("paste.fv", ".regex-mac-address", function (e) {
@@ -364,7 +392,7 @@ $(function () {
 
     //Latitude
     $("body").on("keydown.fv", ".filter-latitude", function (e) {
-        return (IsNumber(e.which, e.shiftKey) || IsDot(e.which) || IsDash(e.which, e.shiftKey) || IsMovementKey(e.which) || IsPaste(e) || IsCopy(e) || IsEnter(e));
+        return IsNumber(e.which, e.shiftKey) || IsDot(e.which) || IsDash(e.which, e.shiftKey) || IsMovementKey(e.which) || IsPaste(e) || IsCopy(e) || IsEnter(e);
     }).on("keyup.fv change.fv", ".regex-latitude", function (e) {
         if ($(this).val().length > 0) {
             if (!validGPSCoordinate.test($(this).val())) {
@@ -395,7 +423,7 @@ $(function () {
 
     //Longitude
     $("body").on("keydown.fv", ".filter-longitude", function (e) {
-        return (IsNumber(e.which, e.shiftKey) || IsDot(e.which) || IsDash(e.which, e.shiftKey) || IsMovementKey(e.which) || IsPaste(e) || IsCopy(e) || IsEnter(e));
+        return IsNumber(e.which, e.shiftKey) || IsDot(e.which) || IsDash(e.which, e.shiftKey) || IsMovementKey(e.which) || IsPaste(e) || IsCopy(e) || IsEnter(e);
     }).on("keyup.fv change.fv", ".regex-longitude", function (e) {
         if ($(this).val().length > 0) {
             if (!validGPSCoordinate.test($(this).val())) {
@@ -426,7 +454,7 @@ $(function () {
 
     //GPS Point e.g. Latitude,Longitude
     $("body").on("keydown.fv", ".filter-gps-point", function (e) {
-        return (IsNumber(e.which, e.shiftKey) || IsDot(e.which) || IsDash(e.which, e.shiftKey) || IsComma(e.which) || IsMovementKey(e.which) || IsPaste(e) || IsCopy(e) || IsEnter(e));
+        return IsNumber(e.which, e.shiftKey) || IsDot(e.which) || IsDash(e.which, e.shiftKey) || IsComma(e.which) || IsMovementKey(e.which) || IsPaste(e) || IsCopy(e) || IsEnter(e);
     }).on("keyup.fv change.fv", ".regex-gps-point", function (e) {
         if ($(this).val().length > 0) {
             if (!validGPSPoint.test($(this).val())) {
@@ -470,11 +498,64 @@ $(function () {
 
 
 
-    //Hard Password
-    $("body").on("keydown.fv", ".filter-hard-password", function (e) {
-        return (!IsPaste(e) && !IsCopy(e));
-    }).on("keyup.fv change.fv", ".regex-hard-password", function (e) {
-        ValidateInputWithRegex(this, validHardPassword);
+    //Conway Corporation Username/Password/AccountNumber/Node
+    $("body").on("keydown.fv", ".filter-conway-corp-username", function (e) {
+        return !IsPaste(e) && !IsCopy(e);
+    }).on("keyup.fv change.fv", ".regex-conway-corp-username", function (e) {
+        $(this).val().length > 0 ? $(this).removeClass("input-invalid").addClass("input-valid") : $(this).removeClass("input-valid input-invalid");
+
+        if ($(this).hasClass("input-valid") && $(this).next().hasClass("error-tooltip")) {
+            $(this).next(".error-tooltip").first().remove();
+        }
+    });
+    $("body").on("keydown.fv", ".filter-conway-corp-password", function (e) {
+        return !IsPaste(e) && !IsCopy(e);
+    }).on("keyup.fv change.fv", ".regex-conway-corp-password", function (e) {
+        ValidateInputWithRegex(this, validConwayCorpPassword);
+    });
+    $("body").on("keyup.fv change.fv", ".regex-conway-corp-account", function (e) {
+        if ($(this).val().length > 0) {
+            if (checkMod11($(this).val())) {
+                $(this).removeClass("input-invalid").addClass("input-valid");
+            }
+            else {
+                $(this).removeClass("input-valid").addClass("input-invalid");
+            }
+        }
+        else {
+            $(this).removeClass("input-invalid input-valid");
+        }
+        if ($(this).hasClass("input-valid") && $(this).next().hasClass("error-tooltip")) {
+            $(this).next(".error-tooltip").first().remove();
+        }
+    }).on("paste.fv", ".regex-conway-corp-account", function (e) {
+        var $this = $(this);
+        setTimeout(function () {
+            if ($this.val().length > 0) {
+                if (checkMod11($this.val())) {
+                    $($this).removeClass("input-invalid").addClass("input-valid");
+                    if ($this.hasClass("input-valid") && $this.next().hasClass("error-tooltip")) {
+                        $this.next(".error-tooltip").first().remove();
+                    }
+                }
+                else {
+                    $this.removeClass("input-valid").addClass("input-invalid");
+                    $this.val("");
+                }
+            }
+            else {
+                $this.removeClass("input-invalid input-valid");
+                $this.val("");
+            }
+        }, 0);
+    });
+    $("body").on("keyup.fv change.fv", ".regex-conway-corp-node", function (e) {
+        ValidateInputWithRegex(this, validNode);
+    }).on("paste.fv", ".regex-conway-corp-node", function (e) {
+        var $this = $(this);
+        setTimeout(function () {
+            return ValidPaste(e, validNode, $this, null);
+        }, 0);
     });
 
     //matches passed in via CSS class
@@ -541,9 +622,11 @@ $(function () {
         var matchString = $(this).attr("data-matches");
         var matchingObject = Normalize(matchString);
         var $this = $(this);
-        $("body").off("change.fvmatch").on("change.fvmatch", matchingObject, function (e) {
-            $this.change();
-        });
+        /*if (e.type === "change") {
+            $("body").off("change.fvmatch").on("change.fvmatch", matchingObject, function (e) {
+                $this.change();
+            });
+        }*/
         $(this).removeClass("input-invalid input-valid");
         if ($(this).val() === $(matchingObject).val() && $(this).val().length > 0) {
             $(this).addClass("input-valid");
@@ -563,9 +646,11 @@ $(function () {
             var matchString = $(this).attr("data-matches");
             var matchingObject = Normalize(matchString);
             var $this = $(this);
-            $("body").off("change.fvmatch").on("change.fvmatch", matchingObject, function (e) {
-                $this.change();
-            });
+            /*if (e.type === "change") {
+                $("body").off("change.fvmatch").on("change.fvmatch", matchingObject, function (e) {
+                    $this.change();
+                });
+            }*/
             $this.removeClass("input-invalid input-valid");
             if ($this.val() === $(matchingObject).val() && $this.val().length > 0) {
                 $this.addClass("input-valid");
@@ -629,22 +714,29 @@ function Normalize(id) {
         id.indexOf("#") !== -1 ? (container = $(id)) : (container = $("#" + id));
     }
     else {
-        container = $(id)
+        container = $(id);
     }
 
-    if (container.length === 0) {
+    if (container.length === 0) {        
         if ($.type(id) === "string") {
             container = $("input[id*=" + id.toString().replace("#", "") + "]");
         }
         else {
-            console.log("*****IMPORTANT***** Unable to find element: " + $(id).selector + "**********");
+            //console.log("*****IMPORTANT***** Unable to find element: " + $(id).selector + "**********");
             container = null;
         }
     }
     return container;
 }
 
+function ValidateWithScheme(scheme) {
+    validationSchemes.push(scheme);
+}
+
 function ValidateContainer(id) {
+
+    //this function doesn't apply styles, it simply sets the validation.errors array
+
     $(".error-summary").remove();
     $(".error-tooltip").remove();
     var container;
@@ -654,20 +746,23 @@ function ValidateContainer(id) {
 
     container = Normalize(id);
 
-    if (container !== null) {
-        if (container.find("input.input-invalid").length > 0) {
+    if (container !== null && container.length > 0) {
+        //handle invalid inputs
+        if ($(container.selector + " input.input-invalid").length > 0) {
             validation.success = false;
-            $.each(container.find("input.input-invalid"), function (index, value) {
+            $.each($(container.selector + " input.input-invalid"), function (index, value) {
                 var error = new Object();
                 error.input = value;
                 error.message = DecodeMessage(value);
                 validation.errors.push(error);
             });
         }
-        if ($(container).find("input.required").not(".input-invalid").not(".input-valid").length > 0) {
+
+        //handle empty but required
+        if ($(container.selector + " input.required").not(".input-invalid").not(".input-valid").length > 0) {
             validation.success = false;
-            $.each(container.find("input.required").not(".input-invalid").not(".input-valid"), function (index, value) {
-                if ($(value).val().length == 0) {
+            $.each($(container.selector + " input.required").not(".input-invalid").not(".input-valid"), function (index, value) {
+                if ($(value).val().length === 0) {
                     validation.success = false;
                     var error = new Object();
                     error.input = $(value);
@@ -679,9 +774,61 @@ function ValidateContainer(id) {
                 }
             });
         }
+
+        //handle custom validation schemes
+        $.each(validationSchemes, function (index, scheme) {
+            //see if container CONTAINS elements from validationScheme
+            if (scheme.elements !== undefined && scheme.elements !== null && scheme.elements.length > 1) {
+                scheme.singleElementFound = false;
+                recursiveEach($(container.selector), scheme);
+
+            }
+            else{
+                scheme.singleElementFound = true; //doesn't really matter if elements is empty; only check when multiple elements are passed that at least one is valid within the container
+            }
+
+            if (scheme.singleElementFound && !scheme.isValid()) {
+                validation.success = false;
+                var error = new Object();
+                if (scheme.elementForError !== undefined && scheme.elementForError !== null) {
+                    error.input = $(scheme.elementForError);
+                }
+                error.message = scheme.error;
+                validation.errors.push(error);
+            }
+        });
+    }
+    else {
+        validation.success = false;
+        var error = new Object();
+        error.message = "***DEVELOPER ERROR*** Invalid container";
+        validation.errors.push(error);
     }
 
     return validation;
+}
+
+function recursiveEach($element, scheme) {
+    if (!scheme.singleElementFound) {
+        $element.children().each(function () {
+            var $currentElement = $(this);
+
+            $.each(scheme.elements, function (elemIndex, element) {
+                if (!scheme.singleElementFound) {
+                    if ($currentElement.selector === $(element).selector) {
+                        scheme.singleElementFound = true;
+                    }
+                }
+            });
+            // Show element
+            //console.info($currentElement);
+            // Show events handlers of current element
+            //console.info($currentElement.data('events'));
+            // Loop her children
+            recursiveEach($currentElement, scheme);
+        });
+    }
+    
 }
 
 function DecodeMessage(value) {
@@ -745,7 +892,7 @@ function DecodeMessage(value) {
     else if ($(value).hasClass("regex-gps-point")) {
         return "Invalid GPS point (must be in the format 35.092945,-92.515869)";
     }
-    else if ($(value).hasClass("regex-hard-password")) {
+    else if ($(value).hasClass("regex-conway-corp-password")) {
         return "Invalid Username/Password";
     }
     else if ($(value).hasClass("regex-url")) {
@@ -762,17 +909,17 @@ function ShowErrorToolTip(inputElement, position, message, colorInput) {
         if (colorInput !== null && colorInput === true) {
             input.not(".input-valid").addClass("validation-input-error");
         }
-        if (position == "right") {
-            input.after("<p class='error-tooltip' style='position:absolute; top:" + (input.position().top - input.scrollTop()) + "px; left:" + (input.position().left + input.outerWidth() + 5) + "px;'>" + message + "</p>");
+        if (position === "right") {
+            input.after("<p class='error-tooltip' style='position:absolute; height:auto; top:" + (input.position().top - input.scrollTop()) + "px; left:" + (input.position().left + input.outerWidth() + 5) + "px;'>" + message + "</p>");
         }
-        else if (position == "top") {
-            input.after("<p class='error-tooltip' style='position:absolute; top:" + (input.position().top - input.scrollTop() - input.outerHeight() - 5) + "px; left:" + (input.position().left) + "px;'>" + message + "</p>");
+        else if (position === "top") {
+            input.after("<p class='error-tooltip' style='position:absolute; height:auto; top:" + (input.position().top - input.scrollTop() - input.outerHeight() - 5) + "px; left:" + (input.position().left) + "px;'>" + message + "</p>");
         }
-        else if (position == "bottom") {
-            input.after("<p class='error-tooltip' style='position:absolute; top:" + (input.position().top - input.scrollTop() + input.outerHeight() + 5) + "px; left:" + (input.position().left) + "px;'>" + message + "</p>");
+        else if (position === "bottom") {
+            input.after("<p class='error-tooltip' style='position:absolute; height:auto; top:" + (input.position().top - input.scrollTop() + input.outerHeight() + 5) + "px; left:" + (input.position().left) + "px;'>" + message + "</p>");
         }
         /*else if (position == "left") {
-        console.log("right", $(input).position().right);
+        //console.log("right", $(input).position().right);
         $(input).before("<p class='error-tooltip' style='position:absolute; top:" + ($(input).position().top - $(input).scrollTop()) + "px; left:" + ($(input).position().left - 200.0) + "px;'>" + message + "</p>");
         }*/
     }
@@ -790,7 +937,7 @@ function ShowErrorSummary(element, beforeOrAfter, heading, errors, colorInputs) 
     if (theElement !== null) {
         var errorString = "<div class='error-summary'><h3>" + heading + "</h3><ul>";
         $.each(errors, function (index, value) {
-            if (colorInputs !== null && colorInputs === true) {
+            if (colorInputs !== null && colorInputs === true) {                
                 $(value.input).not(".input-valid").addClass("validation-input-error");
             }
             if (value.message.length > 0 && value.message !== "") {
@@ -802,11 +949,11 @@ function ShowErrorSummary(element, beforeOrAfter, heading, errors, colorInputs) 
     }
 }
 
-function ShowMessage(element, beforeOrAfter, type, header, message, timeout) {
+function ShowMessage(element, beforeOrAfter, cssClass, header, message, timeout) {
     var theElement = Normalize(element);
     if (theElement !== null) {
         var uid = "validation-" + new Date().getTime().toString();
-        var messageString = "<div id='" + uid + "' class='validation-message " + type + "'><h3>" + header + "</h3><p>";
+        var messageString = "<div id='" + uid + "' class='validation-message " + cssClass + "'><h3>" + header + "</h3><p>";
         messageString += message;
         messageString += "</p>";
         if (timeout === null) {
@@ -835,30 +982,30 @@ function ShowMessage(element, beforeOrAfter, type, header, message, timeout) {
 function IsLetter(key) {
     //65: a
     //90: z
-    return (key >= 65 && key <= 90);
+    return key >= 65 && key <= 90;
 }
 function IsRowNumber(key, shift) {
     //48: 0
     //57: 9
-    return (key >= 48 && key <= 57 && !shift);
+    return key >= 48 && key <= 57 && !shift;
 }
 function IsNumberPadNumber(key) {
     //96: 0
     //105: 9
-    return (key >= 96 && key <= 105);
+    return key >= 96 && key <= 105;
 }
 function IsNumber(key, shift) {
-    return (IsRowNumber(key, shift) || IsNumberPadNumber(key));
+    return IsRowNumber(key, shift) || IsNumberPadNumber(key);
 }
 function IsDash(key, shift) {
     //109: subtract
     //189: dash
-    return (key === 109 || (key === 189 && !shift));
+    return key === 109 || (key === 189 && !shift);
 }
 function IsDot(key) {
     //110: decimal point
     //190: period
-    return (key === 110 || key === 190);
+    return key === 110 || key === 190;
 }
 function IsMovementKey(key) {
     //35: End
@@ -870,26 +1017,26 @@ function IsMovementKey(key) {
     //8: Backspace
     //46: Delete
     //9: Tab
-    return ((key >= 35 && key <= 40) || key === 8 || key === 46 || key === 9);
+    return (key >= 35 && key <= 40) || key === 8 || key === 46 || key === 9;
 }
-function IsModifier(key) {
+function IsModifier(key) {    
     //16: Shift
-    return (key === 16);
+    return key === 16;
 }
-function IsSpace(key) {
+function IsSpace(key) {    
     return key === 32;
 }
-function IsComma(key) {
+function IsComma(key) {    
     return key === 188;
 }
 function IsPaste(e) {
-    return (e.ctrlKey && e.which === 86);
+    return e.ctrlKey && e.which === 86;
 }
 function IsCopy(e) {
-    return (e.ctrlKey && e.which === 67);
+    return e.ctrlKey && e.which === 67;
 }
 function IsEnter(e) {
-    return (e.which === 13);
+    return e.which === 13;
 }
 function ValidPaste(e, regex, input, overridingText) {
     //look for a matches in a data-matches='#someid' attribute or a class of matches:#someid
@@ -903,8 +1050,8 @@ function ValidPaste(e, regex, input, overridingText) {
     }
 }
 function ValidateInputWithRegex(input, regex) {
-    $(input).removeClass("input-invalid input-valid");
-    if ($(input).val().length > 0) {
+    $(input).removeClass("input-invalid input-valid");    
+    if ($(input).val().length > 0) {        
         regex.test($(input).val()) ? $(input).removeClass("input-invalid").addClass("input-valid") : $(input).removeClass("input-valid").addClass("input-invalid");
     }
 
@@ -941,7 +1088,7 @@ function Identify(string) {
     if (validFloat.test(string)) {
         matches.push("float");
     }
-    if (validPhone.test(string)) {
+    if (validPhone.test(CleanPhone(string))) {
         matches.push("phone");
     }
     if (validZip.test(string)) {
@@ -982,11 +1129,17 @@ function Identify(string) {
     if (validURL.test(string)) {
         matches.push("URL");
     }
-    if (validHardPassword.test(string)) {
-        matches.push("Hard password");
+    if (validConwayCorpPassword.test(string)) {
+        matches.push("Conway Corporation password");
+    }
+    if (validNode.test(string)) {
+        matches.push("Conway Corporation node");
+    }
+    if (checkMod11(string)) {
+        matches.push("Conway Corporation account");
     }
 
-
+     
     var n = 0;
     for (var i = 0; i < string.length; i += 3) {
         n += parseInt(string.charAt(i), 10) * 3
@@ -994,11 +1147,11 @@ function Identify(string) {
             + parseInt(string.charAt(i + 2), 10);
     }
 
-    if (n != 0 && n % 10 == 0) {
+    if (n !== 0 && n % 10 === 0) {
         matches.push("bank routing number");
     }
 
-    if (matches.length == 0) {
+    if (matches.length === 0) {
         matches.push("No Matches");
     }
 
@@ -1057,7 +1210,7 @@ function Calculate(Luhn) {
     }
     var mod10 = sum % 10;
     mod10 = 10 - mod10;
-    if (mod10 == 10) {
+    if (mod10 === 10) {
         mod10 = 0;
     }
     return mod10;
@@ -1065,8 +1218,24 @@ function Calculate(Luhn) {
 function Validate(Luhn) {
     var LuhnDigit = parseInt(Luhn.substring(Luhn.length - 1, Luhn.length));
     var LuhnLess = Luhn.substring(0, Luhn.length - 1);
-    if (Calculate(LuhnLess) == parseInt(LuhnDigit)) {
+    if (Calculate(LuhnLess) === parseInt(LuhnDigit)) {
         return true;
     }
     return false;
+}
+function checkMod11(profile) {
+    try {
+        var profileChars = profile.split("");
+        var checkDigit = parseInt(profileChars[profile.length - 1]);
+        var sum = 0;
+        for (i = 0; i < profile.length - 1; i++) {
+            sum += profileChars[i] * (profile.length - i);
+        }
+
+        return checkDigit === (11 - (sum % 11) || checkDigit === 0 && (sum % 11) === 0);
+
+    }
+    catch (err) {
+        return false;
+    }
 }
