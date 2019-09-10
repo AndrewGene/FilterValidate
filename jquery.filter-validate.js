@@ -705,7 +705,189 @@ $(function () {
         setTimeout(function () {
             return ValidPaste(e, regex, $this, null);
         }, 0);
+        });
+
+    //minimum length passed in via CSS class
+    $("body").on("keyup.fv change.fv", "input[class*='min-length:']", function (e) {
+        var classParts = $(this).attr("class").toString().split(' ');
+        var minLengthString;
+        $.each(classParts, function (index, value) {
+            if (value.indexOf("min-length:") !== -1) {
+                minLengthString = value.split(':')[1];
+            }
+        });
+        
+        $(this).removeClass("input-invalid input-valid");
+        if ($(this).val() >= parseInt(minLengthString)) {
+            $(this).addClass("input-valid");
+        }
+        else if ($(this).val().length > 0) {
+            $(this).addClass("input-invalid");
+        }
+
+        if ($(this).hasClass("input-valid") && $(this).next().hasClass("error-tooltip")) {
+            $(this).next(".error-tooltip").first().remove();
+        }
+    }).on("paste.fv", "input[class*='min-length:']", function (e) {
+        var $this = $(this);
+
+        setTimeout(function () {
+            var classParts = $this.attr("class").toString().split(' ');
+            var minLengthString;
+            $.each(classParts, function (index, value) {
+                if (value.indexOf("min-length:") !== -1) {
+                    minLengthString = value.split(':')[1];
+                }
+            });
+            
+            $this.removeClass("input-invalid input-valid");
+            if ($(this).val() >= parseInt(minLengthString)) {
+                $this.addClass("input-valid");
+                if ($this.hasClass("input-valid") && $this.next().hasClass("error-tooltip")) {
+                    $this.next(".error-tooltip").first().remove();
+                }
+                return true;
+            }
+            else if ($this.val().length > 0) {
+                $this.addClass("input-invalid");
+                return false;
+            }
+            else {
+                return false;
+            }
+        }, 0);
     });
+
+    //min length passed in via the data-min-length attribute
+    $("body").on("keyup.fv change.fv", "input[data-min-length]", function (e) {
+        var minLengthString = $(this).attr("data-min-length");
+        var $this = $(this);
+        $(this).removeClass("input-invalid input-valid");
+        if ($(this).val().length >= parseInt(minLengthString)) {
+            $(this).addClass("input-valid");
+        }
+        else if ($(this).val().length > 0) {
+            $(this).addClass("input-invalid");
+        }
+
+        if ($(this).hasClass("input-valid") && $(this).next().hasClass("error-tooltip")) {
+            $(this).next(".error-tooltip").first().remove();
+        }
+
+    }).on("paste.fv", "input[data-min-length]", function (e) {
+        var $this = $(this);
+
+        setTimeout(function () {
+            var minLengthString = $(this).attr("data-min-length");
+            var $this = $(this);
+            $this.removeClass("input-invalid input-valid");
+            if ($this.val().length >= parseInt(minLengthString)) {
+                $this.addClass("input-valid");
+                if ($this.hasClass("input-valid") && $this.next().hasClass("error-tooltip")) {
+                    $this.next(".error-tooltip").first().remove();
+                }
+                return true;
+            }
+            else if ($this.val().length > 0) {
+                $this.addClass("input-invalid");
+                return false;
+            }
+            else {
+                return false;
+            }
+        }, 0);
+        });
+
+    //maximum length passed in via CSS class
+    /*$("body").on("keyup.fv change.fv", "input[class*='max-length:']", function (e) {
+        var classParts = $(this).attr("class").toString().split(' ');
+        var maxLengthString;
+        $.each(classParts, function (index, value) {
+            if (value.indexOf("max-length:") !== -1) {
+                maxLengthString = value.split(':')[1];
+            }
+        });
+
+        $(this).removeClass("input-invalid input-valid");
+        if ($(this).val() <= parseInt(maxLengthString)) {
+            $(this).addClass("input-valid");
+        }
+        else if ($(this).val().length > 0) {
+            $(this).addClass("input-invalid");
+        }
+
+        if ($(this).hasClass("input-valid") && $(this).next().hasClass("error-tooltip")) {
+            $(this).next(".error-tooltip").first().remove();
+        }
+    }).on("paste.fv", "input[class*='max-length:']", function (e) {
+        var $this = $(this);
+
+        setTimeout(function () {
+            var classParts = $this.attr("class").toString().split(' ');
+            var maxLengthString;
+            $.each(classParts, function (index, value) {
+                if (value.indexOf("max-length:") !== -1) {
+                    maxLengthString = value.split(':')[1];
+                }
+            });
+
+            $this.removeClass("input-invalid input-valid");
+            if ($(this).val() <= parseInt(maxLengthString)) {
+                $this.addClass("input-valid");
+                if ($this.hasClass("input-valid") && $this.next().hasClass("error-tooltip")) {
+                    $this.next(".error-tooltip").first().remove();
+                }
+                return true;
+            }
+            else if ($this.val().length > 0) {
+                $this.addClass("input-invalid");
+                return false;
+            }
+            else {
+                return false;
+            }
+        }, 0);
+    });
+
+    //max length passed in via the data-max-length attribute
+    $("body").on("keyup.fv change.fv", "input[data-max-length]", function (e) {
+        var maxLengthString = $(this).attr("data-max-length");
+        var $this = $(this);
+        $(this).removeClass("input-invalid input-valid");
+        if ($(this).val().length <= parseInt(maxLengthString)) {
+            $(this).addClass("input-valid");
+        }
+        else if ($(this).val().length > 0) {
+            $(this).addClass("input-invalid");
+        }
+
+        if ($(this).hasClass("input-valid") && $(this).next().hasClass("error-tooltip")) {
+            $(this).next(".error-tooltip").first().remove();
+        }
+
+    }).on("paste.fv", "input[data-max-length]", function (e) {
+        var $this = $(this);
+
+        setTimeout(function () {
+            var maxLengthString = $(this).attr("data-max-length");
+            var $this = $(this);
+            $this.removeClass("input-invalid input-valid");
+            if ($this.val().length <= parseInt(maxLengthString)) {
+                $this.addClass("input-valid");
+                if ($this.hasClass("input-valid") && $this.next().hasClass("error-tooltip")) {
+                    $this.next(".error-tooltip").first().remove();
+                }
+                return true;
+            }
+            else if ($this.val().length > 0) {
+                $this.addClass("input-invalid");
+                return false;
+            }
+            else {
+                return false;
+            }
+        }, 0);
+    });*/
 });
 
 function Normalize(id) {
@@ -1232,7 +1414,7 @@ function checkMod11(profile) {
             sum += profileChars[i] * (profile.length - i);
         }
 
-        return checkDigit === (11 - (sum % 11) || checkDigit === 0 && (sum % 11) === 0);
+        return (checkDigit === (11 - (sum % 11))) || (checkDigit === 0 && (sum % 11) === 0);
 
     }
     catch (err) {
