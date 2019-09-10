@@ -66,7 +66,7 @@ Take out what you don't need and minify away.  The size should be fairly managab
 All "filter" CSS classes start with "filter-" and all validation CSS classes start with "regex-" (Validation isn't 'simply' regex in some cases. For example, the credit card validation does several checks).
 
 If you wanted both filter and validate a credit card you would write<br/>
-```javascript
+``` javascript
 <input id="txtCCNumber" type="text" maxlength="19" class="filter-credit-card regex-credit-card"/>
 ```
 
@@ -145,6 +145,7 @@ Validation returns a "validation" object that contains 1-n "error" objects.
 <br>
 
 <h4>Validation Object</h4>
+
 ```javascript
     var validation = new Object();
     validation.success = true; //defaults to true
@@ -152,6 +153,7 @@ Validation returns a "validation" object that contains 1-n "error" objects.
 ```
 
 <h4>Error Object</h4>
+
 ```javascript
     var error = new Object();
     error.input = value; //jQuery object (text input) that threw the error
