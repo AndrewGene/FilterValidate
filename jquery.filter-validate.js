@@ -136,6 +136,47 @@ $(function () {
         $(this).removeClass("validation-input-error");
     });
 
+    //min length passed in via the data-min-length attribute
+    //NOTE: This is first since it is the weakest check
+    $("body").on("keyup.fv change.fv", "input[data-min-length]", function (e) {
+        var minLengthString = $(this).attr("data-min-length");
+        var $this = $(this);
+        $(this).removeClass("input-invalid input-valid");
+        if ($(this).val().length >= parseInt(minLengthString)) {
+            $(this).addClass("input-valid");
+        }
+        else if ($(this).val().length > 0) {
+            $(this).addClass("input-invalid");
+        }
+
+        if ($(this).hasClass("input-valid") && $(this).next().hasClass("error-tooltip")) {
+            $(this).next(".error-tooltip").first().remove();
+        }
+
+    }).on("paste.fv", "input[data-min-length]", function (e) {
+        var $this = $(this);
+
+        setTimeout(function () {
+            var minLengthString = $(this).attr("data-min-length");
+            var $this = $(this);
+            $this.removeClass("input-invalid input-valid");
+            if ($this.val().length >= parseInt(minLengthString)) {
+                $this.addClass("input-valid");
+                if ($this.hasClass("input-valid") && $this.next().hasClass("error-tooltip")) {
+                    $this.next(".error-tooltip").first().remove();
+                }
+                return true;
+            }
+            else if ($this.val().length > 0) {
+                $this.addClass("input-invalid");
+                return false;
+            }
+            else {
+                return false;
+            }
+        }, 0);
+    });
+
     //Name
     $("body").on("keydown.fv", ".filter-name", function (e) {
         return (IsLetter(e.which) || IsModifier(e.which) || IsSpace(e.which) || e.which === 222 || IsDash(e.which, e.shiftKey) || IsDot(e.which) || IsMovementKey(e.which) || IsPaste(e) || IsCopy(e) || IsEnter(e));
@@ -758,45 +799,7 @@ $(function () {
         }, 0);
     });
 
-    //min length passed in via the data-min-length attribute
-    $("body").on("keyup.fv change.fv", "input[data-min-length]", function (e) {
-        var minLengthString = $(this).attr("data-min-length");
-        var $this = $(this);
-        $(this).removeClass("input-invalid input-valid");
-        if ($(this).val().length >= parseInt(minLengthString)) {
-            $(this).addClass("input-valid");
-        }
-        else if ($(this).val().length > 0) {
-            $(this).addClass("input-invalid");
-        }
-
-        if ($(this).hasClass("input-valid") && $(this).next().hasClass("error-tooltip")) {
-            $(this).next(".error-tooltip").first().remove();
-        }
-
-    }).on("paste.fv", "input[data-min-length]", function (e) {
-        var $this = $(this);
-
-        setTimeout(function () {
-            var minLengthString = $(this).attr("data-min-length");
-            var $this = $(this);
-            $this.removeClass("input-invalid input-valid");
-            if ($this.val().length >= parseInt(minLengthString)) {
-                $this.addClass("input-valid");
-                if ($this.hasClass("input-valid") && $this.next().hasClass("error-tooltip")) {
-                    $this.next(".error-tooltip").first().remove();
-                }
-                return true;
-            }
-            else if ($this.val().length > 0) {
-                $this.addClass("input-invalid");
-                return false;
-            }
-            else {
-                return false;
-            }
-        }, 0);
-        });
+    
 
     //maximum length passed in via CSS class
     /*$("body").on("keyup.fv change.fv", "input[class*='max-length:']", function (e) {
@@ -930,9 +933,9 @@ function ValidateContainer(id) {
 
     if (container !== null && container.length > 0) {
         //handle invalid inputs
-        if ($(container.selector + " input.input-invalid").length > 0) {
+        if ($(container).find("input.input-invalid").length > 0) {
             validation.success = false;
-            $.each($(container.selector + " input.input-invalid"), function (index, value) {
+            $.each($(container).find("input.input-invalid"), function (index, value) {
                 var error = new Object();
                 error.input = value;
                 error.message = DecodeMessage(value);
@@ -941,9 +944,9 @@ function ValidateContainer(id) {
         }
 
         //handle empty but required
-        if ($(container.selector + " input.required").not(".input-invalid").not(".input-valid").length > 0) {
+        if ($(container).find("input.required").not(".input-invalid").not(".input-valid").length > 0) {
             validation.success = false;
-            $.each($(container.selector + " input.required").not(".input-invalid").not(".input-valid"), function (index, value) {
+            $.each($(container).find("input.required").not(".input-invalid").not(".input-valid"), function (index, value) {
                 if ($(value).val().length === 0) {
                     validation.success = false;
                     var error = new Object();
@@ -956,6 +959,33 @@ function ValidateContainer(id) {
                 }
             });
         }
+
+        //handle matches 
+        //USE CASE: matching text is checked in real-time but sometimes the text field to be matched changes afterwards so it needs to be checked again here
+        $.each($("input[data-matches]"), function (index, input) {
+            var matchString = $(this).attr("data-matches");
+            var matchingObject = Normalize(matchString);
+            $(input).removeClass("input-invalid input-valid");
+            if ($(input).val() === $(matchingObject).val() && $(input).val().length > 0) {
+                $(input).addClass("input-valid");
+                if ($(input).hasClass("input-valid") && $(input).next().hasClass("error-tooltip")) {
+                    $(input).next(".error-tooltip").first().remove();
+                }
+            }
+            else if ($(input).val().length > 0) {
+                $(input).addClass("input-invalid");
+                var error = new Object();
+                error.input = input;
+                error.message = DecodeMessage(input);
+                validation.errors.push(error);
+            }
+            else {
+                var error = new Object();
+                error.input = input;
+                error.message = DecodeMessage(input);
+                validation.errors.push(error);
+            }
+        });
 
         //handle custom validation schemes
         $.each(validationSchemes, function (index, scheme) {
